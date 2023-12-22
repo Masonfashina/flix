@@ -1,5 +1,15 @@
 const global = {
   currentPage: window.location.pathname,
+  search: {
+    term: "",
+    type: "",
+    page: 1,
+    totalPages: 1,
+  },
+  api: {
+    apiKey: "e569b938dcaa2584818d411a6c150a5b",
+    apiUrl: "https://api.themoviedb.org/3/",
+  },
 };
 
 //step3 = getting movies from tmdb and using terinary operators
@@ -172,6 +182,24 @@ function displayBackgroundImage(type, backgroundPath) {
   }
 }
 
+//Search function(step 7)
+
+async function search() {
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+  global.search.type = urlParams.get("type");
+  global.search.term = urlParams.get("search-term");
+
+  if (global.search.term !== "" && global.search.term !== null) {
+    const { results, total_pages, page_number } = await searchAPIData();
+    if (results.length === 0) {
+        showAlert()
+    }
+  } else {
+    showAlert("please enter a search term", 'error');
+  }
+}
+
 //display slider Movies(step6?)
 
 async function displaySlider() {
@@ -183,10 +211,14 @@ async function displaySlider() {
     div.innerHTML = `
        
         <a href="movie-details.html?id=${movie.id}">
-          <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${movie.title}" />
+          <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" alt="${
+      movie.title
+    }" />
         </a>
         <h4 class="swiper-rating">
-          <i class="fas fa-star text-secondary"></i> ${movie.vote_average.toFixed(1)} / 10
+          <i class="fas fa-star text-secondary"></i> ${movie.vote_average.toFixed(
+            1
+          )} / 10
         </h4>
         `;
     document.querySelector(".swiper-wrapper").appendChild(div);
@@ -332,6 +364,23 @@ async function fetchAPIData(endpoint) {
   return data;
 }
 
+//make request to search
+async function searchAPIData() {
+  const API_KEY = "e569b938dcaa2584818d411a6c150a5b";
+  const API_URL = "https://api.themoviedb.org/3/";
+
+  showSpinner();
+
+  const response = await fetch(
+    `${API_URL}search/${global.search.type}?api_key=${API_KEY}&language=en-US&query=${global.search.term}`
+  );
+  const data = await response.json();
+
+  hideSpinner();
+
+  return data;
+}
+
 console.log(global.currentPage);
 
 //show and hide spinner(step3 B)
@@ -351,6 +400,17 @@ function highlightActiveLink() {
       link.classList.add("active");
     }
   });
+}
+
+//show Alert
+function showAlert(message, className) {
+  const alertEl = document.createElement("div");
+  alertEl.classList.add("alert", className);
+  alertEl.appendChild(document.createTextNode(message));
+  document.querySelector("#alert").appendChild(alertEl);
+
+  //this hides the alert after 3 seconds
+  setTimeout(() => alertEl.remove(), 3000);
 }
 
 function addCommasToNumber(number) {
@@ -378,7 +438,7 @@ function init() {
       console.log("TV details");
       break;
     case "/search.html":
-      console.log("Search Page");
+      search();
       break;
   }
 
