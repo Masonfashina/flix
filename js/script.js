@@ -205,7 +205,7 @@ function initSwiper() {
       delay: 4000,
       disableOnInteraction: false,
     },
-    breakPoints: {
+    breakpoints: {
       500: {
         slidesPerView: 2,
       },
