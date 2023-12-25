@@ -5,6 +5,7 @@ const global = {
     type: "",
     page: 1,
     totalPages: 1,
+    totalResults: 0,
   },
   api: {
     apiKey: "e569b938dcaa2584818d411a6c150a5b",
@@ -191,7 +192,13 @@ async function search() {
   global.search.term = urlParams.get("search-term");
 
   if (global.search.term !== "" && global.search.term !== null) {
-    const { results, total_pages, page_number } = await searchAPIData();
+    const { results, total_pages, page,total_results } = await searchAPIData();
+
+      global.search.page=page;
+      global.search.totalPages=total_pages;
+      global.search.totalResults=total_results;
+
+
     if (results.length === 0) {
         showAlert('No results found')
         return
@@ -233,8 +240,39 @@ function displaySearchResults(results){
           </p>
         </div>
         `;
+
+        document.querySelector('#search-results-heading').innerHTML= `
+          <h2>${results.length} of ${global.search.totalResults} Results for ${global.search.term}</h2>
+        `
         document.querySelector("#search-results").appendChild(div);
       });
+
+      displayPagination()
+}
+
+//create and pagination for search(last step)
+function displayPagination(){
+  const div = document.createElement('div');
+  div.classList.add('pagination');
+  div.innerHTML = `
+  <button class="btn btn-primary" id="prev">Prev</button>
+          <button class="btn btn-primary" id="next">Next</button>
+          <div class="page-counter">Page ${global.search.page} of ${global.search.totalPages}</div>
+        </div>
+  `;
+  document.querySelector('#pagination').appendChild(div);
+
+  //disable prev if on first page
+  if(global.search.page === 1){
+    document.querySelector('#prev').disabled = true
+  }
+
+  //disablenext if on last page
+  if(global.search.page === global.search.totalPages){
+    document.querySelector('#next').disabled = true
+  }
+
+  //Next page
 }
 
 //display slider Movies(step6?)
